@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -31,32 +30,36 @@ const DocumentUploadModal = ({ open, onClose, onSubmit, documentType, employeeNa
     nssf: "NSSF Certificate"
   };
 
+  const validateAndSetFile = (file: File) => {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload PDF, JPEG, or PNG files only.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "Please upload files smaller than 10MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload PDF, JPEG, or PNG files only.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Validate file size (max 10MB)
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
-        toast({
-          title: "File Too Large",
-          description: "Please upload files smaller than 10MB.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setSelectedFile(file);
+      validateAndSetFile(file);
     }
   };
 
@@ -64,10 +67,7 @@ const DocumentUploadModal = ({ open, onClose, onSubmit, documentType, employeeNa
     event.preventDefault();
     const file = event.dataTransfer.files[0];
     if (file) {
-      const fakeEvent = {
-        target: { files: [file] }
-      } as React.ChangeEvent<HTMLInputElement>;
-      handleFileSelect(fakeEvent);
+      validateAndSetFile(file);
     }
   };
 
